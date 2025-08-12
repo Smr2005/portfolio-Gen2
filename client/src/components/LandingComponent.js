@@ -84,7 +84,7 @@ const PostData=()=>{
 
     console.log("Sending login data:", {email, password: "***"});
     
-    fetch("http://localhost:5000/api/user/login",{
+    fetch(`${process.env.REACT_APP_API_URL}/api/user/login`,{
         method:'post',
         headers:{
             "Content-Type":"application/json"
@@ -194,7 +194,7 @@ const PostRegisterData=()=>{
 
     console.log("Sending registration data:", {name, email, password: "***"});
     
-    fetch("http://localhost:5000/api/user/register",{
+    fetch(`${process.env.REACT_APP_API_URL}/api/user/register`,{
         method:'post',
         headers:{
             "Content-Type":"application/json"
