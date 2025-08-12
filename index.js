@@ -116,6 +116,16 @@ app.use("/api/admin", adminRoute);
 const userProfileRoute = require("./routes/userProfile");
 app.use("/api/user-profile", userProfileRoute);
 
+// API 404 handler - must come after all API routes
+app.use('/api/*', (req, res) => {
+    console.log(`API 404: ${req.method} ${req.path}`);
+    res.status(404).json({ 
+        error: 'API endpoint not found',
+        path: req.path,
+        method: req.method
+    });
+});
+
 // Note: Files are now stored in MongoDB as base64 data, no longer serving static files from uploads directory
 
 // Admin cleanup interface

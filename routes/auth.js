@@ -44,6 +44,9 @@ const authschema = Joi.object({
 router.post("/register", async (req, res, next) => {
   try {
     console.log("=== REGISTRATION REQUEST ===");
+    console.log("Request URL:", req.url);
+    console.log("Request method:", req.method);
+    console.log("Request headers:", req.headers);
     console.log("Request body:", req.body);
     
     const result = await authschema.validateAsync(req.body);
