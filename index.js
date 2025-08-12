@@ -29,7 +29,7 @@ app.use(cors({
         if (!origin) return callback(null, true);
         
         const allowedOrigins = process.env.NODE_ENV === 'production' || process.env.PORT
-            ? ["https://portfolio-gen-i1bg.onrender.com"]
+            ? ["https://portfolio-gen2.onrender.com"]
             : ["http://localhost:3000", "http://localhost:3001"];
         
         if (allowedOrigins.indexOf(origin) !== -1) {
@@ -261,7 +261,7 @@ app.get("/portfolio/:slug", async (req, res) => {
 function getBaseUrl() {
     return process.env.BACKEND_URL || 
            (process.env.NODE_ENV === 'production' || process.env.PORT 
-             ? 'https://portfolio-gen-i1bg.onrender.com' 
+             ? 'https://portfolio-gen2.onrender.com' 
              : 'http://localhost:5000');
 }
 
@@ -269,7 +269,7 @@ function getBaseUrl() {
 function getFrontendUrl() {
     return process.env.FRONTEND_URL || 
            (process.env.NODE_ENV === 'production' || process.env.PORT 
-             ? 'https://portfolio-gen-i1bg.onrender.com' 
+             ? 'https://portfolio-gen2.onrender.com' 
              : 'http://localhost:3000');
 }
 
@@ -277,7 +277,7 @@ function getFrontendUrl() {
 function ensureDataUrls(data) {
     // Files are now stored as data URLs (data:image/jpeg;base64,xxx), no conversion needed
     // This function is kept for backward compatibility with any existing URL-based data
-    const productionUrl = process.env.BACKEND_URL || 'https://portfolio-gen-i1bg.onrender.com';
+    const productionUrl = process.env.BACKEND_URL || 'https://portfolio-gen2.onrender.com';
     const localhostPattern = /http:\/\/localhost:\d+/g;
     
     let dataString = JSON.stringify(data);

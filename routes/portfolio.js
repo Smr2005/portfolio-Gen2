@@ -9,7 +9,7 @@ const nodemailer = require("nodemailer");
 function getBaseUrl(req) {
   return process.env.BACKEND_URL || 
          (process.env.NODE_ENV === 'production' || process.env.PORT 
-           ? 'https://portfolio-gen-i1bg.onrender.com' 
+           ? 'https://portfolio-gen2.onrender.com' 
            : `${req.protocol}://${req.get('host')}`);
 }
 
@@ -17,7 +17,7 @@ function getBaseUrl(req) {
 function ensureDataUrls(data) {
   // Files are now stored as data URLs (data:image/jpeg;base64,xxx), no conversion needed
   // This function is kept for backward compatibility with any existing URL-based data
-  const productionUrl = process.env.BACKEND_URL || 'https://portfolio-gen-i1bg.onrender.com';
+  const productionUrl = process.env.BACKEND_URL || 'https://portfolio-gen2.onrender.com';
   const localhostPattern = /http:\/\/localhost:\d+/g;
   
   let dataString = JSON.stringify(data);
