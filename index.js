@@ -326,36 +326,36 @@ function generatePortfolioHTML(portfolio) {
 }
 
 function generateTemplate1HTML(data, meta) {
-    
     return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${meta.title || data.name + ' - Portfolio'}</title>
-    <meta name="description" content="${meta.description || 'Portfolio of ' + data.name}">
-    <meta name="keywords" content="${meta.keywords ? meta.keywords.join(', ') : ''}">
+    <title>${meta?.title || data.name + ' - Portfolio'}</title>
+    <meta name="description" content="${meta?.description || 'Portfolio of ' + data.name}">
+    <meta name="keywords" content="${meta?.keywords ? meta.keywords.join(', ') : ''}">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="${meta.title || data.name + ' - Portfolio'}">
-    <meta property="og:description" content="${meta.description || 'Portfolio of ' + data.name}">
+    <meta property="og:title" content="${meta?.title || data.name + ' - Portfolio'}">
+    <meta property="og:description" content="${meta?.description || 'Portfolio of ' + data.name}">
     <meta property="og:image" content="${data.profileImage || ''}">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="${meta.title || data.name + ' - Portfolio'}">
-    <meta property="twitter:description" content="${meta.description || 'Portfolio of ' + data.name}">
+    <meta property="twitter:title" content="${meta?.title || data.name + ' - Portfolio'}">
+    <meta property="twitter:description" content="${meta?.description || 'Portfolio of ' + data.name}">
     <meta property="twitter:image" content="${data.profileImage || ''}">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { 
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             background-color: #f8fafc;
             overflow-x: hidden;
         }
@@ -383,21 +383,54 @@ function generateTemplate1HTML(data, meta) {
             50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.6); }
         }
         
-        .portfolio-header { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: white; 
-            padding: 80px 0;
-            position: relative;
-            overflow: hidden;
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
         }
         
+        .card-3d:hover {
+            transform: rotateY(10deg) rotateX(5deg) translateZ(20px);
+        }
+        
+        .profile-3d {
+            animation: float3d 6s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+        
+        .skill-bar-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+        
+        .skill-bar-3d:hover {
+            transform: translateZ(10px) rotateX(5deg);
+        }
+        
+        /* Navigation */
         .navbar {
             background: rgba(30, 41, 59, 0.95) !important;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        .portfolio-header::before {
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            color: white;
+            padding-top: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
             content: '';
             position: absolute;
             top: 0;
@@ -413,57 +446,174 @@ function generateTemplate1HTML(data, meta) {
             100% { transform: translateX(100%); }
         }
         
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .floating-1 {
+            top: 20%;
+            left: 10%;
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            animation: float3d 8s ease-in-out infinite;
+        }
+        
+        .floating-2 {
+            top: 60%;
+            right: 15%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.05);
+            animation: float3d 6s ease-in-out infinite reverse;
+        }
+        
+        .floating-3 {
+            bottom: 30%;
+            left: 20%;
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.08);
+            animation: rotate3d 10s linear infinite;
+        }
+        
+        .profile-container {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 2rem;
+        }
+        
         .profile-img { 
-            width: 150px; 
-            height: 150px; 
-            border-radius: 0 !important; 
-            border: 5px solid white;
+            width: 200px; 
+            height: 200px; 
+            border-radius: 50% !important; 
+            border: 5px solid rgba(255,255,255,0.3);
             animation: float3d 6s ease-in-out infinite;
             transform-style: preserve-3d;
             transition: all 0.3s ease;
             object-fit: cover;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
         
         .profile-img:hover {
             animation-play-state: paused;
             transform: scale(1.1) rotateY(15deg);
-            border-color: #ffd700;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.8);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
         }
         
-        .profile-3d {
-            animation: float3d 6s ease-in-out infinite;
-            transform-style: preserve-3d;
+        .hero-content {
+            position: relative;
+            z-index: 2;
         }
         
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .hero-buttons {
+            margin-top: 2rem;
+        }
+        
+        .btn-hero {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-hero.primary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-hero.primary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-hero.secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        
+        .btn-hero.secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+        }
+        
+        /* Section Styles */
         .section-title { 
             color: #333; 
-            margin-bottom: 30px; 
+            margin-bottom: 3rem; 
             font-weight: 700;
-            animation: slideIn3d 1s ease-out;
+            font-size: 2.5rem;
+            text-align: center;
             position: relative;
         }
         
         .section-title::after {
             content: '';
             position: absolute;
-            bottom: -10px;
+            bottom: -15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
-            height: 3px;
+            width: 60px;
+            height: 4px;
             background: linear-gradient(90deg, #667eea, #764ba2);
             border-radius: 2px;
         }
         
+        .card-3d {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-10px) rotateY(5deg) rotateX(5deg);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+        
         .skill-item { 
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 15px; 
+            background: white;
+            padding: 1.5rem; 
             border-radius: 15px; 
-            margin-bottom: 15px;
-            transform-style: preserve-3d;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
             border-left: 4px solid #667eea;
+        }
+        
+        .skill-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
         
         .skill-item:hover {
@@ -5118,40 +5268,4 @@ function generateTemplate6HTML(data, meta) {
             backdrop-filter: blur(10px);
             text-decoration: none;
               }
-        
-        .social-link:hover {
-            color: white;
-            transform: scale(1.1);
-            text-decoration: none;
-        }
-    </style>
-</head>
-<body>
-    <!-- Contact Section -->
-    <section id="contact" class="gradient-bg text-center" style="padding: 60px 0; color: white;">
-        <div class="container">
-            <h3 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem;">Ready to Drive Results Together?</h3>
-            <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">Let's discuss how I can help grow your business.</p>
-            ${data.email ? `<a href="mailto:${data.email}" class="btn btn-light btn-lg" style="font-size: 1.1rem; padding: 15px 40px;">
-                <i class="fas fa-envelope me-2"></i>Start the Conversation
-            </a>` : ''}
-            <div style="margin-top: 3rem;">
-                <p style="opacity: 0.8; margin: 0;">&copy; ${new Date().getFullYear()} ${data.name} - Marketing Portfolio</p>
-                <small style="opacity: 0.6;">Powered by <a href="${getFrontendUrl()}" target="_blank" style="color: rgba(255,255,255,0.8);">Portfolio Generator</a></small>
-            </div>
-        </div>
-    </section>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-    `;
-}
-
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log('ðŸš€ Server running on port ' + PORT);
-    console.log('ðŸ“Š Backend URL: http://localhost:' + PORT);
-    console.log('ðŸŒ Environment: ' + (process.env.NODE_ENV || 'development'));
-});
+ 
