@@ -108,7 +108,8 @@
             <label for="regPassword">Password:</label>
             <input type="password" id="regPassword" placeholder="Enter password" value="Lead@00678">
         </div>
-        <button class="button" onclick="testRegistration()">Test Registration</button>
+        <button class="button" onclick="testRegistration()">Test Normal Registration</button>
+        <button class="button" onclick="emergencyRegistration()" style="background-color: #dc3545;">Emergency Registration</button>
         <div id="regResult" class="result" style="display: none;"></div>
     </div>
 
@@ -251,6 +252,56 @@
                     }
                 } else {
                     formatted += `❌ Registration Failed!\n`;
+                    formatted += `💬 Error: ${data.error || 'Unknown error'}\n`;
+                }
+
+                resultDiv.textContent = formatted;
+            } catch (error) {
+                resultDiv.textContent = `❌ Network Error: ${error.message}`;
+            }
+        }
+
+        async function emergencyRegistration() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const resultDiv = document.getElementById('regResult');
+            
+            if (!name || !email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Creating emergency user account...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/user/emergency-register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                let formatted = `🚨 Emergency Registration Results:\n`;
+                formatted += `📧 Email: ${email}\n`;
+                formatted += `📊 Status: ${response.status}\n\n`;
+                
+                if (response.ok) {
+                    formatted += `✅ Emergency Registration Successful!\n`;
+                    formatted += `💾 Stored in: Temporary Storage\n`;
+                    formatted += `🎫 Access Token: ${data.accessToken ? 'Generated' : 'Not generated'}\n`;
+                    formatted += `🔄 Refresh Token: ${data.refreshToken ? 'Generated' : 'Not generated'}\n`;
+                    if (data.user) {
+                        formatted += `👤 User ID: ${data.user.id}\n`;
+                        formatted += `👤 User Name: ${data.user.name}\n`;
+                    }
+                    formatted += `\n🎉 You can now try logging in with these credentials!`;
+                } else {
+                    formatted += `❌ Emergency Registration Failed!\n`;
                     formatted += `💬 Error: ${data.error || 'Unknown error'}\n`;
                 }
 

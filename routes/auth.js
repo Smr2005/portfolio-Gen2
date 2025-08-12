@@ -157,11 +157,19 @@ router.post("/login", async (req, res, next) => {
       
       if (!user) {
         console.log("User not found in MongoDB:", result.email);
-        throw createError.NotFound("User not registered");
+        console.log("Checking if user exists in temporary storage...");
+        
+        // Check temporary storage as fallback
+        const tempUser = tempUsers.find(u => u.email === result.email);
+        if (tempUser) {
+          console.log("User found in temporary storage, switching to temp mode");
+          user = tempUser;
+          isMatch = await bcrypt.compare(result.password, user.password);
+        } else {
+          console.log("User not found in MongoDB or temporary storage");
+          throw createError.NotFound("User not registered");
+        }
       }
-
-      console.log("User found in MongoDB, checking password...");
-      isMatch = await user.isValidPassword(result.password);
     } else {
       console.log("MongoDB not connected, using temporary storage");
       
@@ -475,6 +483,55 @@ router.post("/debug-user", async (req, res) => {
   } catch (error) {
     console.error("Debug user error:", error);
     res.status(500).json({ error: "Failed to debug user", details: error.message });
+  }
+});
+
+// Emergency user creation endpoint (for debugging)
+router.post("/emergency-register", async (req, res) => {
+  try {
+    console.log("=== EMERGENCY REGISTRATION ===");
+    const { name, email, password } = req.body;
+    
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: "Name, email, and password are required" });
+    }
+    
+    // Force registration in temporary storage
+    const existingUser = tempUsers.find(u => u.email === email);
+    if (existingUser) {
+      return res.status(409).json({ error: "User already exists in temporary storage" });
+    }
+    
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const tempUser = {
+      id: Date.now().toString(),
+      name: name,
+      email: email,
+      password: hashedPassword,
+      createdAt: new Date()
+    };
+    
+    tempUsers.push(tempUser);
+    console.log("Emergency user created:", tempUser.email);
+    console.log("Total temp users:", tempUsers.length);
+    
+    const accessToken = await signAccessToken(tempUser.id);
+    const refreshToken = await signRefreshToken(tempUser.id);
+    
+    res.json({
+      message: "User created successfully in temporary storage",
+      accessToken,
+      refreshToken,
+      user: {
+        id: tempUser.id,
+        name: tempUser.name,
+        email: tempUser.email
+      }
+    });
+    
+  } catch (error) {
+    console.error("Emergency registration error:", error);
+    res.status(500).json({ error: "Emergency registration failed", details: error.message });
   }
 });
 

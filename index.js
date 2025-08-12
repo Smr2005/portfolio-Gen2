@@ -46,16 +46,33 @@ app.use(cors({
 }));
 
 //mongo connect
+console.log("=== MONGODB CONNECTION DEBUG ===");
+console.log("Environment:", process.env.NODE_ENV);
+console.log("Port:", process.env.PORT);
+console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+console.log("MONGO_URI length:", process.env.MONGO_URI ? process.env.MONGO_URI.length : 0);
+
+if (!process.env.MONGO_URI) {
+    console.error("❌ MONGO_URI environment variable is not set!");
+    console.log("Available environment variables:", Object.keys(process.env).filter(key => key.includes('MONGO')));
+}
+
 console.log("Attempting to connect to MongoDB...");
 mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-    socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    serverSelectionTimeoutMS: 10000, // Increased timeout
+    socketTimeoutMS: 45000,
+    maxPoolSize: 10,
+    bufferCommands: false,
+    bufferMaxEntries: 0
 })
 .then(() => {
     console.log("✅ Connected to MongoDB successfully");
+    console.log("Database name:", mongoose.connection.name);
+    console.log("Connection host:", mongoose.connection.host);
 })
 .catch((error) => {
     console.error("❌ MongoDB connection error:", error.message);
+    console.error("Full error:", error);
     console.log("⚠️  Server will continue without database connection");
     // Don't exit, continue without database for now
 });
