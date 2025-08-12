@@ -12,6 +12,7 @@ import TestBuilder from '../containers/TestBuilder';
 import WorkingBuilder from '../containers/WorkingBuilder';
 import ResetPasswordPage from './ResetPasswordPage';
 import PortfolioDashboard from './PortfolioDashboard';
+import PortfolioViewer from './PortfolioViewer';
 import AdminPanel from './AdminPanel';
 import UserProfileClean from './UserProfileClean';
 import AboutDevelopers from './AboutDevelopers';
@@ -43,6 +44,7 @@ function Main (){
                 <Route exact path="/builder" component={TestBuilder} />
                 <Route exact path="/full-builder" component={WorkingBuilder} />
                 <Route exact path="/dashboard" component={PortfolioDashboard} />
+                <Route exact path="/portfolio/:slug" component={PortfolioViewer} />
                 <Route exact path="/admin" component={AdminPanel} />
                 <Route exact path="/profile" component={UserProfileClean} />
                 <Route exact path="/about-developers" component={AboutDevelopers} />

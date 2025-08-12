@@ -207,8 +207,8 @@ if (process.env.NODE_ENV === 'production' || process.env.PORT) {
     });
 }
 
-// Public route to serve published portfolios as HTML
-app.get("/portfolio/:slug", async (req, res) => {
+// API endpoint to get portfolio data (for React app)
+app.get("/api/portfolio/:slug", async (req, res) => {
     try {
         const Portfolio = require("./model/Portfolio");
         const { slug } = req.params;
@@ -216,27 +216,7 @@ app.get("/portfolio/:slug", async (req, res) => {
         const portfolio = await Portfolio.findOne({ slug, isPublished: true });
         
         if (!portfolio) {
-            const frontendUrl = getFrontendUrl();
-            
-            return res.status(404).send(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Portfolio Not Found</title>
-                    <meta charset="utf-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1">
-                    <style>
-                        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-                        .error { color: #e74c3c; }
-                    </style>
-                </head>
-                <body>
-                    <h1 class="error">Portfolio Not Found</h1>
-                    <p>The portfolio you're looking for doesn't exist or is not published.</p>
-                    <a href="${frontendUrl}">Create Your Own Portfolio</a>
-                </body>
-                </html>
-            `);
+            return res.status(404).json({ error: "Portfolio not found" });
         }
         
         // Increment view count
@@ -244,26 +224,36 @@ app.get("/portfolio/:slug", async (req, res) => {
         portfolio.lastViewed = new Date();
         await portfolio.save();
         
-        // Generate HTML page with portfolio data
-        const portfolioHtml = generatePortfolioHTML(portfolio);
-        res.send(portfolioHtml);
+        // Return portfolio data as JSON
+        res.json(portfolio);
+        
+    } catch (error) {
+        console.error("Get portfolio API error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Public route to serve published portfolios as React app
+app.get("/portfolio/:slug", async (req, res) => {
+    try {
+        const Portfolio = require("./model/Portfolio");
+        const { slug } = req.params;
+        
+        // Check if portfolio exists (but don't increment views here)
+        const portfolio = await Portfolio.findOne({ slug, isPublished: true });
+        
+        if (!portfolio) {
+            // Serve React app for 404 handling
+            return res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+        }
+        
+        // Serve React app - it will fetch data via /api/portfolio/:slug
+        res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
         
     } catch (error) {
         console.error("Serve portfolio error:", error);
-        res.status(500).send(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Error</title>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-            </head>
-            <body>
-                <h1>Something went wrong</h1>
-                <p>Please try again later.</p>
-            </body>
-            </html>
-        `);
+        // Serve React app even on error - let React handle error display
+        res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
     }
 });
 
@@ -5125,147 +5115,4 @@ function generateTemplate6HTML(data, meta) {
         }
         
         .floating-2 {
-            top: 60%;
-            right: 15%;
-            width: 150px;
-            height: 150px;
-            background: rgba(255,255,255,0.1);
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .hero-card {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 2;
-        }
-        
-        .hero-title {
-            font-size: 3.5rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.5rem;
-            color: #666;
-            margin-bottom: 1rem;
-            font-weight: 300;
-        }
-        
-        .hero-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        
-        .hero-info span {
-            color: #667eea;
-        }
-        
-        .hero-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: #555;
-            margin-bottom: 2rem;
-        }
-        
-        /* PROFILE IMAGE */
-        .profile-container {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 50%;
-            padding: 2rem;
-            display: inline-block;
-            margin-bottom: 2rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-        }
-        
-        .profile-img {
-            width: 250px;
-            height: 250px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid #667eea;
-        }
-        
-        /* BUTTONS */
-        .btn-marketing {
-            border: none;
-            color: white;
-            padding: 12px 30px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 50px;
-            text-decoration: none;
-            display: inline-block;
-            margin: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-marketing.primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-marketing.primary:hover {
-            background: linear-gradient(45deg, #5a6fd8, #6a4190);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .btn-marketing.secondary {
-            background: linear-gradient(45deg, #f093fb, #f5576c);
-            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.3);
-        }
-        
-        .btn-marketing.secondary:hover {
-            background: linear-gradient(45deg, #e881ea, #f3455a);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(240, 147, 251, 0.4);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .btn-marketing.outline {
-            background: transparent;
-            border: 2px solid #667eea;
-            color: #667eea;
-            box-shadow: none;
-        }
-        
-        .btn-marketing.outline:hover {
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-        }
-        
-        /* SOCIAL LINKS */
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-        
-        .social-link {
-            color: rgba(255,255,255,0.8);
-            font-size: 2rem;
-            transition: all 0.3s ease;
-            background: rgba(255,255,255,0.2);
-            padding: 15px;
-            border-radius: 50%;
-            backdrop-filter: blur(10px);
-            text-decoration: none;
-              }
- 
+            to
