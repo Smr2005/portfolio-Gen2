@@ -5114,5 +5114,16 @@ function generateTemplate6HTML(data, meta) {
             animation: pulse 4s ease-in-out infinite;
         }
         
-        .floating-2 {
-            to
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Template6 - Modern Portfolio</h1>
+    <p>This template is under development.</p>
+</body>
+</html>
+    `;
+}
