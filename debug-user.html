@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .status-connected {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-disconnected {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .found {
+            color: #28a745;
+        }
+        .not-found {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 User Debug Tool</h1>
+    <p>This tool helps debug user authentication issues by checking database connection and user status.</p>
+
+    <div class="container">
+        <h2>📊 System Status</h2>
+        <button class="button" onclick="checkSystemStatus()">Check System Status</button>
+        <div id="systemResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>👤 Check Specific User</h2>
+        <div class="input-group">
+            <label for="userEmail">Email Address:</label>
+            <input type="email" id="userEmail" placeholder="Enter email address" value="whatlead0089@gmail.com">
+        </div>
+        <button class="button" onclick="checkUser()">Check User</button>
+        <div id="userResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔐 Test Registration</h2>
+        <p>If your user is not found, you can try registering again:</p>
+        <div class="input-group">
+            <label for="regName">Name:</label>
+            <input type="text" id="regName" placeholder="Enter full name" value="Test User">
+        </div>
+        <div class="input-group">
+            <label for="regEmail">Email:</label>
+            <input type="email" id="regEmail" placeholder="Enter email" value="whatlead0089@gmail.com">
+        </div>
+        <div class="input-group">
+            <label for="regPassword">Password:</label>
+            <input type="password" id="regPassword" placeholder="Enter password" value="Lead@00678">
+        </div>
+        <button class="button" onclick="testRegistration()">Test Registration</button>
+        <div id="regResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function checkSystemStatus() {
+            const resultDiv = document.getElementById('systemResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/user/debug-status`);
+                const data = await response.json();
+                
+                let formatted = `🕐 Timestamp: ${data.timestamp}\n`;
+                formatted += `🌍 Environment: ${data.environment}\n\n`;
+                
+                formatted += `📊 MongoDB Connection:\n`;
+                formatted += `  Status: ${data.mongoConnection.status}\n`;
+                formatted += `  Ready State: ${data.mongoConnection.readyState}\n`;
+                formatted += `  Host: ${data.mongoConnection.host || 'N/A'}\n`;
+                formatted += `  Database: ${data.mongoConnection.name || 'N/A'}\n\n`;
+                
+                if (data.mongoUsers) {
+                    if (data.mongoUsers.error) {
+                        formatted += `❌ MongoDB Users Error: ${data.mongoUsers.error}\n\n`;
+                    } else {
+                        formatted += `👥 MongoDB Users:\n`;
+                        formatted += `  Total Count: ${data.mongoUsers.totalCount}\n`;
+                        if (data.mongoUsers.sampleEmails.length > 0) {
+                            formatted += `  Sample Emails: ${data.mongoUsers.sampleEmails.join(', ')}\n`;
+                        }
+                        formatted += `\n`;
+                    }
+                }
+                
+                formatted += `💾 Temporary Storage:\n`;
+                formatted += `  Users Count: ${data.tempUsersCount}\n`;
+                if (data.tempUsers && data.tempUsers.length > 0) {
+                    formatted += `  Temp Users: ${data.tempUsers.map(u => u.email).join(', ')}\n`;
+                }
+
+                resultDiv.textContent = formatted;
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function checkUser() {
+            const email = document.getElementById('userEmail').value;
+            const resultDiv = document.getElementById('userResult');
+            
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/user/debug-user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                let formatted = `🔍 User Search Results for: ${data.email}\n`;
+                formatted += `🕐 Timestamp: ${data.timestamp}\n`;
+                formatted += `📊 MongoDB: ${data.mongoConnection}\n\n`;
+                
+                formatted += `📍 Found Status:\n`;
+                formatted += `  In MongoDB: ${data.found.inMongo ? '✅ YES' : '❌ NO'}\n`;
+                formatted += `  In Temp Storage: ${data.found.inTempStorage ? '✅ YES' : '❌ NO'}\n\n`;
+                
+                if (data.mongoUser) {
+                    formatted += `👤 MongoDB User Details:\n`;
+                    formatted += `  ID: ${data.mongoUser.id}\n`;
+                    formatted += `  Name: ${data.mongoUser.name}\n`;
+                    formatted += `  Email: ${data.mongoUser.email}\n\n`;
+                }
+                
+                if (data.tempUser) {
+                    formatted += `💾 Temp Storage User Details:\n`;
+                    formatted += `  Name: ${data.tempUser.name}\n`;
+                    formatted += `  Email: ${data.tempUser.email}\n\n`;
+                }
+                
+                if (data.mongoError) {
+                    formatted += `❌ MongoDB Error: ${data.mongoError}\n`;
+                }
+
+                resultDiv.textContent = formatted;
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function testRegistration() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const resultDiv = document.getElementById('regResult');
+            
+            if (!name || !email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Attempting registration...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/user/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                let formatted = `📝 Registration Test Results:\n`;
+                formatted += `📧 Email: ${email}\n`;
+                formatted += `📊 Status: ${response.status}\n\n`;
+                
+                if (response.ok) {
+                    formatted += `✅ Registration Successful!\n`;
+                    formatted += `🎫 Access Token: ${data.accessToken ? 'Generated' : 'Not generated'}\n`;
+                    formatted += `🔄 Refresh Token: ${data.refreshToken ? 'Generated' : 'Not generated'}\n`;
+                    if (data.user) {
+                        formatted += `👤 User ID: ${data.user.id}\n`;
+                        formatted += `👤 User Name: ${data.user.name}\n`;
+                    }
+                } else {
+                    formatted += `❌ Registration Failed!\n`;
+                    formatted += `💬 Error: ${data.error || 'Unknown error'}\n`;
+                }
+
+                resultDiv.textContent = formatted;
+            } catch (error) {
+                resultDiv.textContent = `❌ Network Error: ${error.message}`;
+            }
+        }
+
+        // Auto-load system status on page load
+        window.onload = function() {
+            checkSystemStatus();
+        };
+    </script>
+</body>
+</html>

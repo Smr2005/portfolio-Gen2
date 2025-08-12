@@ -379,4 +379,100 @@ router.post("/new-password", async (req, res) => {
   }
 });
 
+// Debug endpoint to check database connection and user status
+router.get("/debug-status", async (req, res) => {
+  try {
+    const debugInfo = {
+      timestamp: new Date().toISOString(),
+      mongoConnection: {
+        readyState: mongoose.connection.readyState,
+        status: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+        host: mongoose.connection.host,
+        name: mongoose.connection.name
+      },
+      tempUsersCount: tempUsers.length,
+      environment: process.env.NODE_ENV || 'development'
+    };
+
+    // If MongoDB is connected, try to count users
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const userCount = await User.countDocuments();
+        debugInfo.mongoUsers = {
+          totalCount: userCount,
+          sampleEmails: []
+        };
+        
+        // Get first 5 user emails for debugging (without passwords)
+        const sampleUsers = await User.find({}, { email: 1, name: 1, _id: 0 }).limit(5);
+        debugInfo.mongoUsers.sampleEmails = sampleUsers.map(u => u.email);
+      } catch (dbError) {
+        debugInfo.mongoUsers = { error: dbError.message };
+      }
+    }
+
+    // Add temp users info (without passwords)
+    if (tempUsers.length > 0) {
+      debugInfo.tempUsers = tempUsers.map(u => ({ email: u.email, name: u.name }));
+    }
+
+    res.json(debugInfo);
+  } catch (error) {
+    console.error("Debug status error:", error);
+    res.status(500).json({ error: "Failed to get debug status", details: error.message });
+  }
+});
+
+// Debug endpoint to check specific user
+router.post("/debug-user", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const debugInfo = {
+      email: email,
+      timestamp: new Date().toISOString(),
+      mongoConnection: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+      found: {
+        inMongo: false,
+        inTempStorage: false
+      }
+    };
+
+    // Check MongoDB
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const mongoUser = await User.findOne({ email: email }, { email: 1, name: 1, _id: 1 });
+        if (mongoUser) {
+          debugInfo.found.inMongo = true;
+          debugInfo.mongoUser = {
+            id: mongoUser._id,
+            email: mongoUser.email,
+            name: mongoUser.name
+          };
+        }
+      } catch (dbError) {
+        debugInfo.mongoError = dbError.message;
+      }
+    }
+
+    // Check temp storage
+    const tempUser = tempUsers.find(u => u.email === email);
+    if (tempUser) {
+      debugInfo.found.inTempStorage = true;
+      debugInfo.tempUser = {
+        email: tempUser.email,
+        name: tempUser.name
+      };
+    }
+
+    res.json(debugInfo);
+  } catch (error) {
+    console.error("Debug user error:", error);
+    res.status(500).json({ error: "Failed to debug user", details: error.message });
+  }
+});
+
 module.exports = router;

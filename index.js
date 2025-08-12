@@ -138,6 +138,11 @@ app.get("/admin-test", (req, res) => {
     res.sendFile(path.join(__dirname, 'admin-test.html'));
 });
 
+// Debug user interface
+app.get("/debug-user", (req, res) => {
+    res.sendFile(path.join(__dirname, 'debug-user.html'));
+});
+
 // API health check route (moved after API routes)
 app.get("/api/health", async (req, res, next) => {
     res.json({ 
