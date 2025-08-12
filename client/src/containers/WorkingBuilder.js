@@ -3,7 +3,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Navbar, Nav, Alert, Tab, Tabs } from "react-bootstrap";
 import Template1 from "../templates/Template1";
 import Template2 from "../templates/Template2";
-import Template3 from "../templates/Template3Simple";
+import Template3 from "../templates/Template3";
 import Template4 from "../templates/Template4";
 import Template5 from "../templates/Template5";
 import Template6 from "../templates/Template6";
