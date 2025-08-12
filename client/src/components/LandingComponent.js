@@ -8,6 +8,7 @@ import Aos from "aos";
 import M from 'materialize-css'
 import {UserContext} from '../context/UserContext'
 import PasswordReset from './PasswordReset'
+import { API_ENDPOINTS } from '../utils/api'
 
 const Landing=()=> {
 const {state,dispatch} = useContext(UserContext)
@@ -84,7 +85,7 @@ const PostData=()=>{
 
     console.log("Sending login data:", {email, password: "***"});
     
-    fetch(`${process.env.REACT_APP_API_URL}/api/user/login`,{
+    fetch(API_ENDPOINTS.LOGIN,{
         method:'post',
         headers:{
             "Content-Type":"application/json"
@@ -194,7 +195,7 @@ const PostRegisterData=()=>{
 
     console.log("Sending registration data:", {name, email, password: "***"});
     
-    fetch(`${process.env.REACT_APP_API_URL}/api/user/register`,{
+    fetch(API_ENDPOINTS.REGISTER,{
         method:'post',
         headers:{
             "Content-Type":"application/json"
